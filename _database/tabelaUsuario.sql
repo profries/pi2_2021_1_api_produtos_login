@@ -1,0 +1,1 @@
+CREATE TABLE `crud_produtos`.`usuario` ( `id` INT NOT NULL AUTO_INCREMENT , `nome` VARCHAR(30) NOT NULL , `email` VARCHAR(255) NOT NULL , `username` VARCHAR(30) NOT NULL , `senha` VARCHAR(30) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
