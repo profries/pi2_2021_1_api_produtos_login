@@ -13,22 +13,17 @@ exports.listar = (req, res) => {
     })
 }
 
-exports.inserir = (req, res) => {
+exports.inserir = (req, res) => {    
     //Obter o dado do request - nome e o preco
     const produto = req.body;
     
-    //SQL
-    const sql = "INSERT INTO produto(nome,preco) VALUES (?,?)"
-
-    conexao.query(sql, [produto.nome, produto.preco],
-        (erro, rows) => {
+    produtoRepository.inserir(produto, (erro, produtoSalvo) => {
         if(erro){
             res.status(500).json({"erro:":"Database Error"})
             console.log(erro)
         }
         else {
-            produto.id = rows.insertId;
-            res.status(201).json(produto)
+            res.status(201).json(produtoSalvo)
         }
     })
 }

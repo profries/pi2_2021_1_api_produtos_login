@@ -11,5 +11,20 @@ exports.listar = (callback) => {
             callback(null, rows);
         }
     })
+}
 
+exports.inserir = (produto, callback) => {   
+    //SQL
+    const sql = "INSERT INTO produto(nome,preco) VALUES (?,?)"
+
+    conexao.query(sql, [produto.nome, produto.preco],
+        (erro, rows) => {
+            if(erro){
+                callback(erro, null)
+            }
+            else {
+                produto.id = rows.insertId;
+                callback(null, produto)
+            }
+    })    
 }
