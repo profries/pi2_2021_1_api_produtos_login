@@ -28,3 +28,55 @@ exports.inserir = (produto, callback) => {
             }
     })    
 }
+
+exports.buscarPorId = (id, callback) => {
+
+    const sql = "SELECT * FROM produto WHERE id=?";
+
+    conexao.query(sql, [id], (err, rows) => {
+        if(err){
+            const error = {
+                status: 500,
+                msg: err
+            }
+            callback(error, null);
+        }
+        else {
+            if(rows && rows.length > 0){
+                callback(null,rows[0])
+            }
+            else{ 
+                const error = {
+                    status: 404,
+                    msg: "produto nao encontrado"
+                }
+                callback(error, null);
+            }
+        }
+    })
+}
+
+exports.deletar = (id, callback) => {
+    const sql = `DELETE FROM produto WHERE id=?`;
+    conexao.query(sql, [id], (err, rows) => {
+        if(err){
+            const error = {
+                status: 500,
+                msg: err
+            }
+            callback(err, null);
+        }
+        else {
+            if(rows.affectedRows){
+                callback(null, id);
+            }
+            else {
+                const error = {
+                    status: 500,
+                    msg: err
+                }
+                callback(err, null);    
+            }
+        }
+    })            
+}

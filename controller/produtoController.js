@@ -28,24 +28,25 @@ exports.inserir = (req, res) => {
     })
 }
 
-exports.buscarPorId = (req, res) => {
-    const id = req.params.id;
-    const sql = "SELECT * FROM produto WHERE id=?";
-
-    conexao.query(sql, [id], (erro, rows) => {
-        if(erro){
-            res.status(500).json({"erro:":"Database Error"})
-            console.log(erro)
+exports.buscarPorId = (req, res) => {    
+    const id = +req.params.id;
+    if(isNaN(id)){
+        const error = {
+            status: 400,
+            msg: "Id deve ser um numero"
         }
-        else {
-            if(rows && rows.length > 0){
-                res.json(rows[0])
+        res.status(error.status).json(error)
+    }
+    else{
+        produtoRepository.buscarPorId(id, (erro, produto) => {
+            if(erro){
+                res.status(erro.status).json(erro)
             }
-            else{ 
-                res.status(404).json({"msg":"Produto nao encontrado"})
+            else {
+                res.json(produto)
             }
-        }
-    })
+        })
+    }
 }
 
 exports.atualizar = (req, res) => {
@@ -66,17 +67,29 @@ exports.atualizar = (req, res) => {
 }
 
 exports.deletar = (req, res) => {
-    const id = req.params.id;
-
-    const sql = `DELETE FROM produto WHERE id=?`;
-    conexao.query(sql, [id], (erro, rows) => {
-        if(erro){
-            res.status(500).json({"erro:":"Database Error"})
-            console.log(erro)
+    const id = +req.params.id;
+    if(isNaN(id)){
+        const error = {
+            status: 400,
+            msg: "Id deve ser um numero"
         }
-        else {
-            if(rows.affectedRows)
-            res.json({"msg": `Produto ${id} removido com sucesso`});
-        }
-    })
+        res.status(error.status).json(error)
+    }
+    else{
+        produtoRepository.buscarPorId(id, (erro, produto) => {
+            if(erro){
+                res.status(erro.status).json(erro)
+            }
+            else {
+                produtoRepository.deletar (id, (erro, id) => {
+                    if(erro){
+                        res.status(erro.status).json(erro)
+                    }
+                    else {
+                        res.json(produto)
+                    }        
+                })
+            }
+        })
+    }
 }
