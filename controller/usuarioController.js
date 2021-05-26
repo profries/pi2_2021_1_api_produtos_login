@@ -1,4 +1,5 @@
 const conexao = require('../config/conexaoBD')
+const jwt = require('jsonwebtoken')
 const usuarioRepository = require('../repository/usuarioRepository')
 
 exports.listar = (req, res) => {
@@ -104,4 +105,74 @@ exports.deletar = (req, res) => {
             res.json({"msg": `Usuario ${id} removido com sucesso`});
         }
     })
+}
+
+exports.validarUsuario = (req, res) => {
+    if(req.body && req.body.username && req.body.senha){
+        const username = req.body.username;
+        const senha = req.body.senha;
+        usuarioRepository.buscarPorUsername(username, (err,usuario) => {
+            if(err){
+                if(err.status == 404){
+                    const erro = {
+                        status: 401,
+                        msg: "Usuario invalido"
+                    }
+                    res.status(erro.status).json(erro);
+                }
+                else {
+                    res.status(err.status).json(err);
+                }
+            }
+            else {
+                if(usuario.senha == senha){
+                    const token = jwt.sign({
+                        id: usuario.id,
+                        nome: usuario.nome
+                    }, "Sen@cr5", {expiresIn: "1h"});
+                    res.status(201).json({"token":token});
+                }
+                else {
+                    const erro = {
+                        status: 401,
+                        msg: "Senha invalida"
+                    }
+                    res.status(erro.status).json(erro);
+                }
+            }
+        })
+    }
+    else {
+        const erro = {
+            status: 400,
+            msg: "Usuario ou senha inexistentes"
+        }
+        res.status(erro.status).json(erro);
+    }
+}
+
+exports.validarToken = (req, res, next) => {
+    const token = req.get("x-auth-token");
+    if(!token){
+        const error = { 
+            status: 403,
+            msg: "Nao tem token de acesso"
+        }
+        res.status(error.status).json(error);
+    }
+    else {
+        jwt.verify(token, "Sen@cr5", (err, payload) => {
+            if(err){
+                const error = { 
+                    status: 403,
+                    msg: "Token invalido"
+                }
+                res.status(error.status).json(error);        
+            }
+            else{
+                console.log("Id do Usuario: "+payload.id);
+                next();
+            }
+        })
+    }
 }
